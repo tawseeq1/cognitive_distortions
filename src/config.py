@@ -8,6 +8,10 @@ class Config:
     PROCESSED_DATA_DIR = os.path.join(DATA_DIR, 'processed')
     OUTPUT_DIR = os.path.join(DATA_DIR, 'output')
     PLOTS_DIR = os.path.join(OUTPUT_DIR, 'plots')
+    PLOT_CORR_DIR = os.path.join(PLOTS_DIR, 'correlation')
+    PLOT_TS_RAW_DIR = os.path.join(PLOTS_DIR, 'time_series', 'raw')
+    PLOT_TS_NORM_DIR = os.path.join(PLOTS_DIR, 'time_series', 'normalized')
+    PLOT_TS_SPIKES_DIR = os.path.join(PLOTS_DIR, 'time_series', 'spikes')
     TABLES_DIR = os.path.join(OUTPUT_DIR, 'tables')
     
     # File Names (Expected Input)
@@ -39,5 +43,8 @@ class Config:
     def ensure_directories():
         os.makedirs(Config.RAW_DATA_DIR, exist_ok=True)
         os.makedirs(Config.PROCESSED_DATA_DIR, exist_ok=True)
-        os.makedirs(Config.PLOTS_DIR, exist_ok=True)
         os.makedirs(Config.TABLES_DIR, exist_ok=True)
+        os.makedirs(Config.PLOT_CORR_DIR, exist_ok=True)
+        os.makedirs(Config.PLOT_TS_RAW_DIR, exist_ok=True)
+        os.makedirs(Config.PLOT_TS_NORM_DIR, exist_ok=True)
+        os.makedirs(Config.PLOT_TS_SPIKES_DIR, exist_ok=True)

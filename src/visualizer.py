@@ -3,6 +3,7 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 import os
+import math
 from .config import Config
 
 class Visualizer:
@@ -11,10 +12,8 @@ class Visualizer:
 
     def filter_and_identify_spikes(self, data, window_size=4):
         """
-        Detects spikes in a time series based on moving average and standard deviation.
-        Returns a series with spikes preserved and non-spikes set to 0.
+        Detects spikes in a time series.
         """
-        # Convert to numpy for performance
         data_arr = np.array(data)
         filtered_data = []
         
@@ -23,15 +22,12 @@ class Visualizer:
                 window = data_arr[i - window_size:i]
                 avg_prev = np.mean(window)
                 std_dev = np.std(window)
-                
-                # Condition: Value > Moving Average + 1 SD
                 if data_arr[i] - avg_prev > std_dev:
                     filtered_data.append(data_arr[i])
                 else:
                     filtered_data.append(0)
             else:
-                filtered_data.append(0) # Initial padding
-                
+                filtered_data.append(0)
         return pd.Series(filtered_data, index=data.index)
 
     def prepare_time_series(self, df, distortion_names):
@@ -42,25 +38,15 @@ class Visualizer:
         df = df.set_index(Config.DATE_COLUMN).sort_index()
         
         weekly_data = {}
-        
-        # 1. Total Posters (Unique Authors) per week for normalization
-        # Note: If 'author' is missing, fallback to count of posts
         if Config.AUTHOR_COLUMN in df.columns:
             weekly_posters = df[Config.AUTHOR_COLUMN].resample('W').nunique()
         else:
             weekly_posters = df.resample('W').size()
-            
-        # Avoid division by zero
         weekly_posters = weekly_posters.replace(0, 1)
 
         for distortion in distortion_names:
-            # A. Raw Counts
             raw_counts = df[distortion].resample('W').sum()
-            
-            # B. Normalized (Distortions per 100 Posters)
             norm_counts = (raw_counts / weekly_posters) * 100
-            
-            # C. Spikes (on Normalized data)
             spikes = self.filter_and_identify_spikes(norm_counts)
             
             weekly_data[distortion] = {
@@ -68,112 +54,149 @@ class Visualizer:
                 'norm': norm_counts,
                 'spikes': spikes
             }
-            
         return weekly_data
 
-    def plot_time_series(self, weekly_data):
+    def _plot_grid(self, weekly_data, data_type, title_suffix, output_dir, color):
         """
-        Plots trends for Raw, Normalized, and Spikes for each distortion.
+        Helper to plot 12 distortions in a single figure (3x4 grid) AND individual plots.
         """
-        print("Generating individual time series plots...")
+        distortion_names = list(weekly_data.keys())
+        n = len(distortion_names)
+        cols = 4
+        rows = math.ceil(n / cols)
         
-        for distortion, series_dict in weekly_data.items():
-            # Create a figure with 3 subplots
-            fig, axes = plt.subplots(3, 1, figsize=(12, 12), sharex=True)
+        # 1. Summary Plot (All in One Image)
+        fig, axes = plt.subplots(rows, cols, figsize=(20, 15))
+        axes = axes.flatten()
+        
+        for i, distortion in enumerate(distortion_names):
+            series = weekly_data[distortion][data_type]
+            ax = axes[i]
+            if data_type == 'spikes':
+                ax.bar(series.index, series, color=color, width=5)
+            else:
+                ax.plot(series.index, series, color=color)
+            ax.set_title(distortion)
+            ax.tick_params(axis='x', rotation=45)
             
-            # 1. Raw
-            axes[0].plot(series_dict['raw'].index, series_dict['raw'], color='blue')
-            axes[0].set_title(f'{distortion} - Raw Counts')
-            
-            # 2. Normalized
-            axes[1].plot(series_dict['norm'].index, series_dict['norm'], color='green')
-            axes[1].set_title(f'{distortion} - Normalized (per 100 posters)')
-            
-            # 3. Spikes
-            axes[2].bar(series_dict['spikes'].index, series_dict['spikes'], color='red', width=5) # width in days approx
-            axes[2].set_title(f'{distortion} - Spikes Only')
-            
+            # 2. Individual Plot (One per file)
+            plt.figure(figsize=(10, 6))
+            if data_type == 'spikes':
+                plt.bar(series.index, series, color=color, width=5)
+            else:
+                plt.plot(series.index, series, color=color)
+            plt.title(f'{distortion} - {title_suffix}')
+            plt.xlabel('Date')
+            plt.ylabel('Value')
             plt.tight_layout()
-            path = os.path.join(Config.PLOTS_DIR, f'series_{distortion.replace(" ", "_")}.png')
-            plt.savefig(path)
+            indiv_path = os.path.join(output_dir, f'{distortion.replace(" ", "_")}.png')
+            plt.savefig(indiv_path)
             plt.close()
 
+        # Hide empty subplots in summary
+        for i in range(n, len(axes)):
+            axes[i].axis('off')
+            
+        fig.suptitle(f'All Distortions - {title_suffix}', fontsize=16)
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        summary_path = os.path.join(output_dir, 'SUMMARY_ALL_PLOTS.png')
+        fig.savefig(summary_path)
+        plt.close(fig)
+        print(f"Saved summary and individual plots to {output_dir}")
+
+    def plot_time_series(self, weekly_data):
+        print("Generating Segregated Time Series Plots...")
+        self._plot_grid(weekly_data, 'raw', 'Raw Counts', Config.PLOT_TS_RAW_DIR, 'blue')
+        self._plot_grid(weekly_data, 'norm', 'Normalized', Config.PLOT_TS_NORM_DIR, 'green')
+        self._plot_grid(weekly_data, 'spikes', 'Spikes', Config.PLOT_TS_SPIKES_DIR, 'red')
+
     def plot_combined_trends(self, weekly_data):
-        """
-        "Suman Plot": All distortions on one plot (Normalized), with COVID markers.
-        """
-        print("Generating Combined (Suman) Plot...")
+        print("Generating Combined Suman Plot...")
         plt.figure(figsize=(16, 8))
-        
         for distortion, series_dict in weekly_data.items():
-            # Smooth lines for readability
             smoothed = series_dict['norm'].rolling(window=4).mean()
             plt.plot(smoothed.index, smoothed, label=distortion, alpha=0.7)
             
-        # COVID Markers
         covid_start = pd.to_datetime(Config.COVID_START_DATE)
         covid_end = pd.to_datetime(Config.COVID_END_DATE)
+        plt.axvline(x=covid_start, color='red', linestyle='--', label='COVID Start')
+        plt.axvline(x=covid_end, color='red', linestyle='--', label='COVID End')
         
-        plt.axvline(x=covid_start, color='red', linestyle='--', linewidth=2, label='COVID Start')
-        plt.axvline(x=covid_end, color='red', linestyle='--', linewidth=2, label='COVID End')
-        
-        plt.title('Combined Normalized Trends of Cognitive Distortions (4-Week Rolling Avg)')
-        plt.xlabel('Date')
-        plt.ylabel('Frequency (per 100 posters)')
+        plt.title('Combined Normalized Trends')
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.tight_layout()
-        
         path = os.path.join(Config.PLOTS_DIR, 'combined_trends_covid.png')
         plt.savefig(path)
         plt.close()
 
     def plot_correlation_matrices(self, weekly_data):
-        """
-        Generates 9 Correlation Matrices:
-        Periods: Before, During, After COVID
-        Types: Raw, Norm, Spikes
-        """
-        print("Generating Correlation Matrices...")
+        print("Generating Time-Series Correlation Matrices...")
+        periods = {
+            'Before': (None, Config.COVID_START_DATE),
+            'During': (Config.COVID_START_DATE, Config.COVID_END_DATE),
+            'After': (Config.COVID_END_DATE, None)
+        }
+        data_types = ['raw', 'norm', 'spikes']
         
+        for p_name, (start, end) in periods.items():
+            for d_type in data_types:
+                df = pd.DataFrame()
+                for dist, s_dict in weekly_data.items():
+                    series = s_dict[d_type]
+                    if start: series = series[series.index >= pd.to_datetime(start)]
+                    if end: series = series[series.index < pd.to_datetime(end)]
+                    df[dist] = series
+                
+                if df.empty: continue
+                
+                plt.figure(figsize=(10, 8))
+                sns.heatmap(df.corr(), annot=True, cmap='coolwarm', fmt=".2f")
+                plt.title(f'Correlation: {p_name} ({d_type})')
+                plt.tight_layout()
+                path = os.path.join(Config.PLOT_CORR_DIR, f'corr_ts_{p_name}_{d_type}.png')
+                plt.savefig(path)
+                plt.close()
+
+    def plot_per_comment_correlations(self, df, distortion_names):
+        """
+        Calculates correlation based on co-occurrence in COMMENTS only.
+        Splits by time period.
+        """
+        print("Generating Per-Comment Correlation Matrices...")
+        
+        # Filter for comments only
+        comments_df = df[df['source_type'] == 'comment'].copy()
+        
+        if comments_df.empty:
+            print("No comments found for per-comment correlation.")
+            return
+
         periods = {
             'Before': (None, Config.COVID_START_DATE),
             'During': (Config.COVID_START_DATE, Config.COVID_END_DATE),
             'After': (Config.COVID_END_DATE, None)
         }
         
-        data_types = ['raw', 'norm', 'spikes']
-        
         for p_name, (start, end) in periods.items():
-            for d_type in data_types:
-                # 1. Build DataFrame for this period & type
-                combined_df = pd.DataFrame()
+            subset = comments_df.copy()
+            if start:
+                subset = subset[subset[Config.DATE_COLUMN] >= pd.to_datetime(start)]
+            if end:
+                subset = subset[subset[Config.DATE_COLUMN] < pd.to_datetime(end)]
+            
+            if subset.empty:
+                continue
                 
-                for distortion, series_dict in weekly_data.items():
-                    series = series_dict[d_type]
-                    
-                    # Filter by date
-                    if start:
-                        series = series[series.index >= pd.to_datetime(start)]
-                    if end:
-                        series = series[series.index < pd.to_datetime(end)]
-                        
-                    combined_df[distortion] = series
-                
-                if combined_df.empty:
-                    print(f"Warning: No data for {p_name} ({d_type}). Skipping.")
-                    continue
-                    
-                # 2. Calculate Correlation
-                corr = combined_df.corr()
-                
-                # 3. Plot
-                plt.figure(figsize=(10, 8))
-                sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", vmin=-1, vmax=1)
-                plt.title(f'Correlation: {p_name} COVID ({d_type.capitalize()})')
-                plt.tight_layout()
-                
-                filename = f'corr_{p_name}_{d_type}.png'
-                path = os.path.join(Config.PLOTS_DIR, filename)
-                plt.savefig(path)
-                plt.close()
-                print(f"Saved {filename}")
+            # Convert boolean columns to int for correlation
+            corr_df = subset[distortion_names].astype(int)
+            corr = corr_df.corr()
+            
+            plt.figure(figsize=(10, 8))
+            sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", vmin=-1, vmax=1)
+            plt.title(f'Correlation (Per Comment): {p_name} COVID')
+            plt.tight_layout()
+            
+            path = os.path.join(Config.PLOT_CORR_DIR, f'corr_comment_{p_name}.png')
+            plt.savefig(path)
+            plt.close()
+            print(f"Saved corr_comment_{p_name}.png (n={len(subset)})")

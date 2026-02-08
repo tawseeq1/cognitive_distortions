@@ -63,6 +63,9 @@ def main():
         # C. Correlation Matrices (Before/During/After x Raw/Norm/Spikes)
         visualizer.plot_correlation_matrices(weekly_data)
         
+        # D. Per-Comment Correlation Matrices
+        visualizer.plot_per_comment_correlations(result_df, distortion_names)
+        
     # 6. Topic Modeling (Optional or if specialized mode)
     # Only run if explicitly asked or if 'all' includes it (might be slow for 'all')
     if args.mode == 'topic_model':
