@@ -31,6 +31,10 @@ class Config:
     CLUSTERS_K_MAX = 100
     CLUSTERS_K_STEP = 10
     
+    # Dates
+    COVID_START_DATE = '2020-04-07'
+    COVID_END_DATE = '2022-01-01'
+    
     @staticmethod
     def ensure_directories():
         os.makedirs(Config.RAW_DATA_DIR, exist_ok=True)

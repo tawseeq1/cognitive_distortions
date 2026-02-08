@@ -50,8 +50,18 @@ def main():
     # 5. Visualization
     if args.mode == 'all':
         print("Generating Visualizations...")
-        visualizer.plot_time_series(result_df, distortion_names)
-        visualizer.plot_correlation_matrix(result_df, distortion_names)
+        
+        # Prepare Data (Raw, Norm, Spikes)
+        weekly_data = visualizer.prepare_time_series(result_df, distortion_names)
+        
+        # A. Individual Trends
+        visualizer.plot_time_series(weekly_data)
+        
+        # B. Combined "Suman" Plot
+        visualizer.plot_combined_trends(weekly_data)
+        
+        # C. Correlation Matrices (Before/During/After x Raw/Norm/Spikes)
+        visualizer.plot_correlation_matrices(weekly_data)
         
     # 6. Topic Modeling (Optional or if specialized mode)
     # Only run if explicitly asked or if 'all' includes it (might be slow for 'all')

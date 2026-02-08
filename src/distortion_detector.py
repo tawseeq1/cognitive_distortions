@@ -34,10 +34,9 @@ class DistortionDetector:
         """
         print("Detecting distortions...")
         
-        # Initialize columns
-        for distortion in self.distortion_dictionaries:
-            sentences_df[distortion] = False
-
+        # detect(...)
+        print("Detecting distortions...")
+        
         # Inefficient but simple iteration for now, can be optimized with regex if needed
         # Given n-grams can be phrases, simple 'in' check is safest
         
