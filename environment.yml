@@ -1,0 +1,23 @@
+# environment.yml
+# WHY: Conda equivalent of requirements.txt for users who prefer conda. Create the
+# environment with:  conda env create -f environment.yml  &&  conda activate cogdist
+# Heavy ML packages (pytorch, transformers, sentence-transformers) are installed via
+# pip inside the conda env because their conda builds are platform-specific.
+name: cogdist
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy>=1.24
+  - pandas>=2.0
+  - matplotlib>=3.7
+  - seaborn>=0.12
+  - pyyaml>=6.0
+  - nltk>=3.8
+  - scikit-learn>=1.3
+  - pytest>=7.0
+  - pip
+  - pip:
+      - sentence-transformers>=2.2
+      - transformers>=4.30
+      - torch>=2.0

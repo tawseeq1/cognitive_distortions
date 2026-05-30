@@ -1,0 +1,24 @@
+# topic_modeling.yaml
+# WHY: The topic-modelling notebooks hard-coded the Sentence-BERT model name, the
+# k-search range (which drifted between 10-50, 10-100, 10-500, 10-1000 across
+# versions), the random seed, and the number of example sentences per cluster.
+# Pinning them here makes the topic model reproducible and easy to retune.
+topic_modeling:
+  embedding_model: sentence-transformers/all-mpnet-base-v2
+  random_state: 42
+
+  # Cluster-count search range for the Davies-Bouldin sweep. The manuscript
+  # explored up to ~500-1000; keep small for the synthetic sample, raise for real.
+  k_min: 10
+  k_max: 50
+
+  # Context unit fed to the embedder:
+  #   sentence -> NLTK sentence containing the n-gram (default)
+  #   window   -> +/- `window` words around the matched n-gram
+  context: sentence
+  window: 10
+
+  examples_per_cluster: 5
+
+  # Distortion category the manuscript focuses on first.
+  focus_category: Emotional Reasoning

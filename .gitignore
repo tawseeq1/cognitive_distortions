@@ -1,0 +1,36 @@
+# Private Reddit corpus (~31M documents) — never commit real data.
+data/raw/**
+!data/raw/.gitkeep
+
+data/interim/**
+!data/interim/.gitkeep
+
+data/processed/**
+!data/processed/.gitkeep
+
+# Block any CSV/Parquet that might land in data dirs (including synthetic samples).
+data/**/*.csv
+data/**/*.parquet
+data/**/*.pkl
+
+# Trained model artifacts (regenerable, potentially large).
+results/models/**
+!results/models/.gitkeep
+
+# Paper figures, tables, and manifest in results/ ARE tracked (not ignored).
+
+# Machine-specific config overrides.
+configs/config.local.yaml
+
+# Python.
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS / editor.
+.DS_Store
+*.swp
+.venv/
+.env

@@ -1,0 +1,21 @@
+# experiment.yaml
+# WHY: Top-level experiment switches that control which communities and stages a
+# run touches, plus global reproducibility settings. Lets `run_pipeline.py` be
+# driven entirely from config when no CLI flags are given.
+experiment:
+  name: cognitive_distortions_reddit
+  seed: 42
+  log_level: INFO
+
+  # Communities to analyse.
+  communities: [sgexams, teenagers]
+
+  # Default stage order when --stage is not passed on the CLI. Topic modelling and
+  # sentiment are excluded by default because they require heavy optional deps
+  # (sentence-transformers / transformers+torch); enable them explicitly.
+  default_stages:
+    - make_sample
+    - detect
+    - timeseries
+    - correlation
+    - visualize

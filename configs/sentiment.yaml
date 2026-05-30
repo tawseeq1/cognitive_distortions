@@ -1,0 +1,10 @@
+# sentiment.yaml
+# WHY: Records the RoBERTa model used for the sentiment validation step so it is
+# explicit and swappable. The original repo never committed a finished sentiment
+# script; this pins the public Twitter/social-media RoBERTa appropriate for Reddit.
+sentiment:
+  model: cardiffnlp/twitter-roberta-base-sentiment-latest
+  batch_size: 32
+  # Cap the number of sentences scored per category when running on the full
+  # corpus (sentiment inference is the slowest stage). null = score all.
+  max_sentences: 2000

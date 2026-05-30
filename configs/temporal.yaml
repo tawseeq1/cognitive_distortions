@@ -1,0 +1,21 @@
+# temporal.yaml
+# WHY: Centralises the time constants and time-series parameters that were
+# scattered as magic numbers across the notebooks (COVID window UTC seconds,
+# 604800 s/week, the /100 normalisation scale, the 4-week spike window).
+temporal:
+  # COVID-19 windows as UTC seconds (Singapore-referenced, per the notebooks).
+  covid_start: 1579478400   # ~22 Jan 2020
+  covid_end: 1594598400     # ~13 Jul 2020 (assumed acute-phase end)
+  end_date: 1697372672      # cap for the "after" period (avoids partial tail)
+
+  seconds_per_week: 604800
+  n_orders: [1, 2, 3, 4, 5] # n-gram orders generated for detection
+
+  # Normalisation: divide weekly counts by weekly word volume, then * scale.
+  # The notebooks used /100 (vs /1000 or log) as the agreed convention.
+  normalize_scale: 100
+
+  # Spike detection: a "major spike" is > spike_sd SDs above the trailing
+  # `spike_window`-week mean (plots_masked.ipynb).
+  spike_window: 4
+  spike_sd: 1.0

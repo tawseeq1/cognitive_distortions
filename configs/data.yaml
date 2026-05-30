@@ -1,0 +1,39 @@
+# data.yaml
+# WHY: Declares the datasets and their on-disk locations so no analysis code ever
+# hard-codes a filename. The raw Reddit CSVs (~31M posts/comments) are private and
+# are NOT shipped with this repo. When they are absent and `use_sample` is true,
+# the loaders fall back to a deterministic synthetic sample (src/data/make_sample.py)
+# so the whole pipeline still runs end-to-end. To run on the real data, drop the
+# CSVs under data/raw/ (or point these paths elsewhere) and set use_sample: false.
+data:
+  use_sample: true
+
+  # Synthetic-sample parameters (only used when use_sample is true / data missing).
+  sample:
+    seed: 42
+    n_posts: 120       # per community, split across before/during/after COVID
+    n_comments: 300    # per community, split across the three periods
+
+  sgexams:
+    # r/SGExams -- Singaporean students.
+    posts:
+      - data/raw/sgexams_posts_Oct2023.csv
+    comments:
+      - data/raw/sgexams_comments_Oct2023.csv
+
+  teenagers:
+    # r/teenagers -- North American teenagers. Comments were sharded into 4 files;
+    # shards 3 and 4 contained malformed rows (read with on_bad_lines='skip').
+    posts:
+      - data/raw/teen_sampled_posts.csv
+    comments:
+      - data/raw/teen_sampled_comments_1.csv
+      - data/raw/teen_sampled_comments_2.csv
+      - data/raw/teen_sampled_comments_3.csv
+      - data/raw/teen_sampled_comments_4.csv
+
+  # Column conventions shared by both communities.
+  columns:
+    time: created_utc
+    comment_text: [body]
+    post_text: [title, body]

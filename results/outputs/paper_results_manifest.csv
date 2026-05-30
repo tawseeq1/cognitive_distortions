@@ -1,0 +1,15 @@
+community,generated_figure,paper_figure,description,exists
+sgexams,results/figures/sgexams_timeseries_raw.png,figures/timeseries_raw_sgexams.png,Raw weekly distortion counts,True
+sgexams,results/figures/sgexams_timeseries_zscore.png,figures/timeseries_zscore_sgexams.png,Z-score normalised series,True
+sgexams,results/figures/sgexams_timeseries_overlay.png,figures/timeseries_multiple_sgexams.png,All 12 series overlaid,True
+sgexams,results/figures/sgexams_correlation_before.png,figures/correlation_before_sgexams.png,Correlation before COVID,True
+sgexams,results/figures/sgexams_correlation_during.png,figures/correlation_during_sgexams.png,Correlation during COVID,True
+sgexams,results/figures/sgexams_correlation_after.png,figures/correlation_after_sgexams.png,Correlation after COVID,True
+sgexams,results/figures/sgexams_correlation_overall.png,figures/correlation_all_sgexams.png,Overall correlation,True
+teenagers,results/figures/teenagers_timeseries_raw.png,figures/timeseries_raw_teenagers.png,Raw weekly distortion counts,True
+teenagers,results/figures/teenagers_timeseries_zscore.png,figures/timeseries_zscore_teenagers.png,Z-score normalised series,True
+teenagers,results/figures/teenagers_timeseries_overlay.png,figures/timeseries_multiple_teenagers.png,All 12 series overlaid,True
+teenagers,results/figures/teenagers_correlation_before.png,figures/correlation_before_teenagers.png,Correlation before COVID,True
+teenagers,results/figures/teenagers_correlation_during.png,figures/correlation_during_teenagers.png,Correlation during COVID,True
+teenagers,results/figures/teenagers_correlation_after.png,figures/correlation_after_teenagers.png,Correlation after COVID,True
+teenagers,results/figures/teenagers_correlation_overall.png,figures/correlation_all_teenagers.png,Overall correlation,True
