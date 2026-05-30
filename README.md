@@ -138,8 +138,8 @@ The manuscript figures and correlation tables from the paper are included under
   title  = {Cognitive Distortions in Online Student Communities:
             A Comparative Analysis of Singaporean and North American Teenagers
             Before and After COVID-19},
-  author = {Ahmad, Tawseeq and Ali, Farhan},
-  note   = {Singapore Management University},
+  author = {Tawseeq S M, Ali Farhan},
+  note   = {},
   year   = {2024}
 }
 ```
